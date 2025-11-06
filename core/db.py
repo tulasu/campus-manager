@@ -1,10 +1,10 @@
 from sqlmodel import SQLModel, Session, create_engine
 from typing import Generator
-from core.config import config
+from core.config import settings
 
 
 connect_args = {"check_same_thread": False}
-engine = create_engine(config.db_connection_url, connect_args=connect_args)
+engine = create_engine(settings.db_connection_url, connect_args=connect_args)
 
 
 def create_db_and_tables():

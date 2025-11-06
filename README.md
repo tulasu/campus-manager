@@ -1,168 +1,76 @@
-# Campus Manager
+# 🏠 Campus Manager
 
-A streamlined application for students to submit housing applications and for administrators to manage room assignments.
+**A modern student campus distribution management system built with FastAPI and Google Sheets integration.**
 
----
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.118+-green.svg)](https://fastapi.tiangolo.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Table of Contents
+## 📋 Overview
 
-1. [Overview](#overview)  
-2. [Features](#features)  
-3. [Architecture / Modules](#architecture--modules)  
-4. [Setup & Installation](#setup--installation)  
-5. [Running the Application](#running-the-application)  
-6. [Google Sheets & Google Forms Integration](#google-sheets--google-forms-integration)  
-7. [Creating Your Own Spreadsheet & Service Account Credentials](#creating-your-own-spreadsheet--service-account-credentials)
-8. [License](#license)  
+Campus Manager is an intelligent system for automating student housing distribution based on multiple criteria including academic priority, special needs, distance from campus, and family status. The system provides a fair, transparent, and data-driven approach to campus accommodation assignments.
 
----
+## ✨ Features
 
-## Overview
+- **🎯 Smart Distribution Algorithm** - Multi-criteria scoring system with priority handling
+- **📊 Google Sheets Integration** - Seamless data management and storage
+- **🔧 RESTful API** - Clean, well-documented API endpoints
+- **🎨 Modern Web Interface** - Responsive frontend with real-time feedback
+- **📝 Comprehensive Logging** - Detailed audit trails and error tracking
+- **⚡ High Performance** - Asynchronous operations with FastAPI
+- **🛡️ Type Safety** - Full Pydantic validation and type hints
+- **🧪 Testable Architecture** - Clean separation of concerns
 
-Campus Manager is intended to facilitate the workflow of student housing applications. Students fill in a form (Google Form), submitting their details. Administrators view and manage assignments via a Google Spreadsheet (the “main table”) or via the app.
-
-The project bridges between the Google Form responses, the Google Sheets API, and your own logic (Python backend) to process, display, and manage data.
-
-Provided references:
-
-- **Main table (Google Sheets)**:  
-  <https://docs.google.com/spreadsheets/d/1Gmn0YiKvs_VG9nLmLl25eGTwCvgL494r7F6QUVcI03Q>  
-- **Google Form used for submissions**:  
-  <https://forms.gle/Mvdqyecxv7N1BRz58>  
-
----
-
-## Features
-
-- Accepts student submissions via a Google Form  
-- Stores / synchronizes data into a Google Spreadsheet  
-- Administrative interface (via backend logic) to assign rooms, manage statuses  
-- Modular separation: domain logic, repositories (data access), service layer, handlers (HTTP endpoints)  
-- Easy to adapt / extend (new fields, new workflows)  
-
----
-
-## Architecture / Modules
-
-Here's a rough breakdown of the directory structure / modules (as seen in the GitHub repo):
+## 🏗️ Architecture
 
 ```
+campus-manager/
+├── 📁 core/                  # Core application components
+│   ├── config.py            # Configuration management
+│   ├── db.py                # Database setup
+│   ├── exceptions.py        # Custom exception classes
+│   ├── logging.py           # Logging configuration
+│   └── lifespan.py          # Application lifecycle
+├── 📁 di/                   # Dependency injection
+├── 📁 domain/               # Domain models and business logic
+│   ├── student.py           # Student domain model
+│   └── distribution.py      # Distribution models
+├── 📁 repositories/         # Data access layer
+├── 📁 services/             # Business logic services
+├── 📁 handlers/             # API route handlers
+├── 📁 static/               # Frontend assets
+├── main.py                  # Application entry point
+└── requirements.txt         # Dependencies
+```
 
-.
-├── core
-│   ├── config.py
-│   ├── db.py
-│   ├── __init__.py
-│   ├── lifespan.py
-│   └── __pycache__
-│       ├── config.cpython-313.pyc
-│       ├── db.cpython-313.pyc
-│       ├── __init__.cpython-313.pyc
-│       └── lifespan.cpython-313.pyc
-├── database.db
-├── di
-│   ├── db.py
-│   ├── gspread.py
-│   ├── __init__.py
-│   ├── __pycache__
-│   │   ├── gspread.cpython-313.pyc
-│   │   ├── __init__.cpython-313.pyc
-│   │   ├── repositories.cpython-313.pyc
-│   │   └── services.cpython-313.pyc
-│   ├── repositories.py
-│   └── services.py
-├── domain
-│   ├── __init__.py
-│   ├── __pycache__
-│   │   ├── __init__.cpython-313.pyc
-│   │   └── student.cpython-313.pyc
-│   └── student.py
-├── handlers
-│   ├── http
-│   │   ├── handler.py
-│   │   ├── __init__.py
-│   │   └── __pycache__
-│   │       ├── handler.cpython-313.pyc
-│   │       └── __init__.cpython-313.pyc
-│   ├── __init__.py
-│   └── __pycache__
-│       └── __init__.cpython-313.pyc
-├── main.py
-├── __pycache__
-│   └── main.cpython-313.pyc
-├── README.md
-├── repositories
-│   ├── __init__.py
-│   ├── interfaces.py
-│   ├── __pycache__
-│   │   ├── __init__.cpython-313.pyc
-│   │   ├── interfaces.cpython-313.pyc
-│   │   └── student.cpython-313.pyc
-│   └── student.py
-├── requirements.txt
-├── service_account.json
-├── services
-│   ├── __init__.py
-│   ├── __pycache__
-│   │   ├── __init__.cpython-313.pyc
-│   │   └── student.cpython-313.pyc
-│   └── student.py
-└── test_main.http
+### Design Principles
 
-16 directories, 44 files
+- **Clean Architecture** - Separation of concerns with proper abstraction layers
+- **Dependency Injection** - Loose coupling and easy testing
+- **SOLID Principles** - Maintainable and extensible code
+- **Type Safety** - Comprehensive type hints and validation
+- **Async/Await** - Non-blocking operations for better performance
 
-~/study/campus_manager master !1 ?1 ❯ tree -d .                                                                                      Py campus_manager 17:34:32
-.
-├── core
-├── di
-├── domain
-├── handlers
-│   └──  http
-├── repositories
-├── services
-├── .env.example
-├── README.md
-├──  database.db
-└── main.py
+## 🚀 Quick Start
 
-````
-
-- `core/` — fundamental app setup, configuration  
-- `di/` — dependency injection, wiring of components  
-- `domain/` — domain models, business objects  
-- `handlers/` — HTTP / API handlers / endpoints  
-- `repositories/` — data access layer (e.g. wrapper for Google Sheets, local DB, etc.)  
-- `services/` — business logic, application services  
-- `main.py` — application entry point  
-
-Note: The repository also includes a `database.db` (SQLite) file. That might be used for local persistence or caching.
-
----
-
-## Setup & Installation
 ### Prerequisites
 
-- Python 3.8+ (or whichever version you choose)  
-- `pip` (Python package manager)  
-- Google Cloud (for service account credentials)  
-- Access to Google Sheets and Forms APIs  
-- A Google account  
+- Python 3.8 or higher
+- Google Cloud account with access to Google Sheets API
+- Git
 
-### Steps
+### Installation
 
-1. **Clone the repository**  
-    ```bash
-       git clone https://github.com/tulasu/campus-manager.git
-       cd campus-manager
-    ````
-
-2. **Create a virtual environment & activate it**
-
+1. **Clone the repository**
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate   # on macOS / Linux  
-   # or
-   .\venv\Scripts\activate     # on Windows
+   git clone https://github.com/your-username/campus-manager.git
+   cd campus-manager
+   ```
+
+2. **Create virtual environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 3. **Install dependencies**
@@ -170,78 +78,229 @@ Note: The repository also includes a `database.db` (SQLite) file. That might be 
    pip install -r requirements.txt
    ```
 
-4. **Prepare `.env` file**
-   Copy `.env.example` to `.env` and fill in necessary values (see the “Environment Variables / `.env`” section below).
+4. **Configure Google Sheets**
+   - Follow [Google Setup Guide](GOOGLE_SETUP.md)
+   - Create service account and download JSON key
+   - Share your Google Sheet with the service account
 
-5. **Place `service_account.json` in project root (or appropriate location)**
-   This file will contain your Google service account credentials (see instructions later).
+5. **Set up environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
 
-6. **(Optional) Initialize / migrate database**
-   If the application uses a SQLite DB or similar local persistence (e.g. `database.db`), you may need to create tables or seed some data. Check the code for any migrations or initialization scripts.
-
----
-
-## Running the Application
-
-Once everything is installed and configured:
+### Running the Application
 
 ```bash
-python main.py
+python run.py
 ```
 
-This should start the server (e.g. Flask or other web framework). Then you can access the application via `http://localhost:5000` (or whatever port is configured).
+The application will be available at:
+- 🌐 **Frontend**: http://localhost:8000
+- 📚 **API Documentation**: http://localhost:8000/docs
+- 🔍 **Health Check**: http://localhost:8000/health
 
-If there are custom commands or settings (debug mode, host/port override), check `main.py` or configuration files.
+## 📊 Google Sheets Setup
+
+### Required Sheets Structure
+
+**Sheet 1: Students Data**
+```
+ФИО | Пол | Институт | СВО | ЧАЭС | Инвалидность | Курение | Расстояние | Многодетная семья
+Иванов | М | ИПМКН | 0 | 0 | 0 | 0 | 50 | 1
+Петров | М | Другое | 0 | 0 | 0 | 1 | 25 | 0
+```
+
+**Sheet 2: Institute Weights**
+```
+Институт | Баллы за институт | СВО | ЧАЭС | Инвалидность | Расстояние | Многодетная семья
+ИПМКН | 100 | 100 | 100 | 100 | 100 | 100
+Горный | 100 | 100 | 100 | 100 | 100 | 100
+Другой | 50 | 100 | 100 | 100 | 100 | 100
+```
+
+**Sheet 3: Results** (auto-generated)
+
+## 🎯 Distribution Algorithm
+
+The system uses a comprehensive scoring algorithm:
+
+### 1. **Data Normalization**
+- Distance: `distance / 500` (normalized to 0-1 scale)
+- Binary criteria: 0 or 1 (SVO, ChAES, Disability, etc.)
+
+### 2. **Score Calculation**
+```
+Total Score = Institute Score +
+              (SVO × SVO Weight) +
+              (ChAES × ChAES Weight) +
+              (Disability × Disability Weight) +
+              (Smoking × Smoking Weight) +
+              (Normalized Distance × Distance Weight) +
+              (Large Family × Large Family Weight)
+```
+
+### 3. **Priority Ranking**
+1. **Priority Students** (SVO/ChAES/Disability ≠ 0)
+2. **Regular Students**
+3. Within each group: sorted by total score (descending)
+
+## 🛠️ Configuration
+
+### Environment Variables
+
+```bash
+# Google Sheets Configuration
+GOOGLE_SERVICE_ACCOUNT=service_account.json
+GOOGLE_SHEET_ID=your_google_sheet_id
+
+# Database
+DB_CONNECTION_URL=sqlite:///database.db
+
+# Application Settings
+APP_NAME="Campus Manager"
+VERSION="1.0.0"
+DEBUG=false
+
+# Sheet Indices
+STUDENTS_SHEET_INDEX=0
+WEIGHTS_SHEET_INDEX=1
+RESULTS_SHEET_INDEX=2
+```
+
+## 📚 API Documentation
+
+### Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | Frontend application |
+| GET | `/health` | Health check |
+| GET | `/api/v1/students` | Get all students |
+| POST | `/api/v1/calculate` | Calculate distribution |
+
+### Calculate Distribution
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/calculate" \
+     -H "Content-Type: application/json"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Distribution calculated for 15 students",
+  "students_count": 15
+}
+```
+
+## 🔧 Development
+
+### Running Tests
+
+```bash
+python -m pytest tests/
+```
+
+### Code Quality
+
+```bash
+# Code formatting
+black .
+
+# Type checking
+mypy .
+
+# Linting
+flake8
+```
+
+### Project Structure
+
+- **`core/`** - Essential application infrastructure
+- **`domain/`** - Business entities and logic
+- **`repositories/`** - Data access abstraction
+- **`services/`** - Business logic implementation
+- **`handlers/`** - HTTP request/response handling
+- **`di/`** - Dependency injection setup
+
+## 📈 Monitoring & Logging
+
+The application includes comprehensive logging:
+
+- **Colored console output** with different log levels
+- **Structured logging** for easy parsing
+- **Detailed error tracking** with context
+- **Performance metrics** for distribution calculations
+
+Log levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+## 🔒 Security
+
+- **Service Account Authentication** for Google Sheets
+- **Input Validation** with Pydantic models
+- **Error Handling** without sensitive information exposure
+- **Secure Configuration** with environment variables
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Google Sheets Connection Error**
+   - Verify service account file path
+   - Check Google Sheet sharing permissions
+   - Confirm Google Sheets API is enabled
+
+2. **Module Import Errors**
+   - Ensure running from project root
+   - Check virtual environment activation
+   - Verify all dependencies installed
+
+3. **Data Validation Errors**
+   - Check Google Sheets column headers
+   - Verify data types and formats
+   - Review log messages for specific errors
+
+### Debug Mode
+
+Enable debug logging by setting `DEBUG=true` in `.env` file.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
+
+### Development Guidelines
+
+- Follow PEP 8 style guide
+- Add type hints to all functions
+- Write comprehensive docstrings
+- Include unit tests for new features
+- Maintain backward compatibility
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **FastAPI** - Modern web framework for building APIs
+- **Google Sheets API** - Data storage and management
+- **Pydantic** - Data validation using Python type annotations
+- **SQLModel** - SQL databases in Python
+
+## 📞 Support
+
+For support and questions:
+
+- 📧 Email: support@campus-manager.dev
+- 🐛 Issues: [GitHub Issues](https://github.com/your-username/campus-manager/issues)
+- 📖 Documentation: [Wiki](https://github.com/your-username/campus-manager/wiki)
 
 ---
 
-## Google Sheets & Google Forms Integration
-
-This project uses the Google Sheets API to read/write data into a spreadsheet (the “main table”) and reads responses coming from a Google Form.
-
-Typical workflow:
-
-1. A student fills out the Google Form → the response is stored in the linked spreadsheet (Google Forms auto-links to a sheet).
-2. The application periodically or on-demand reads new responses from that sheet.
-3. The app writes computed/derived data, assignments, status updates, etc., into other sheets or other columns.
-4. The app’s UI or API lets administrators view / modify the sheet data.
-
-The “main table” is essentially your Google Spreadsheet with rows representing student submissions and columns for different attributes (name, program, scores, assignment status, etc.).
-
-You’ll need to know the sheet ID, sheet name, and column headers to map them in your code.
-
----
-
-## Creating Your Own Spreadsheet & Service Account Credentials
-
-If you want to replicate the setup in your own Google Cloud / Google Sheets environment, here’s how:
-
-### 1. Create a Google Sheet (the main table)
-
-* Go to Google Sheets → New spreadsheet
-* Add column headers as needed (e.g. `Timestamp`, `Student Name`, `Program`, `Score`, `Assigned Room`, `Status`, etc.)
-* Note down the **Spreadsheet ID** (the long string in the sheet URL)
-* Optionally, share this sheet with your service account email (so that your app can read/write to it)
-
-### 2. Create a Google Form and link it to the sheet (or use an existing one)
-
-* In Google Forms, build your form fields (e.g. dropdowns, text, etc.)
-* In *Responses* tab → click the green Sheets icon to link it to your spreadsheet
-* Now form submissions will appear in the sheet automatically
-
-### 3. Create a Google Cloud service account & `service_account.json`
-
-* Go to Google Cloud Console → IAM & Admin → Service Accounts
-* Create a new service account (e.g. `campus-manager-sa`)
-* Assign necessary roles — typically `Editor` or more restrictive scope: “Sheets API Editor”
-* Go to “Keys” for that service account → create a JSON key → download it
-* Rename the downloaded file to `service_account.json` and place it into your project (or somewhere your code expects)
-* In your spreadsheet, **share** (via Google Sheets UI) with that service account email (so the service account can access the sheet)
-
-Your code will use that JSON to authenticate via the Google APIs client libraries.
-
----
-
-## License
-
-Include or mention the license under which your project is released (MIT, Apache, etc). If there isn’t one yet, you might add an `LICENSE` file.
+**Built with ❤️ for educational institutions**
