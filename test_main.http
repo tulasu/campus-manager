@@ -1,11 +1,26 @@
 # Test your FastAPI endpoints
+# Примечание: Приложение запускается на порту 5500 (согласно run.py)
 
-GET http://127.0.0.1:8000/
+### Health Check
+GET http://localhost:5500/health
 Accept: application/json
 
 ###
 
-GET http://127.0.0.1:8000/hello/User
+### Frontend (главная страница)
+GET http://localhost:5500/
+Accept: text/html
+
+###
+
+### Получить список студентов
+GET http://localhost:5500/students
 Accept: application/json
+
+###
+
+### Рассчитать распределение студентов
+POST http://localhost:5500/calculate
+Content-Type: application/json
 
 ###
