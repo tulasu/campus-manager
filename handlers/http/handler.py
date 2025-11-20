@@ -4,10 +4,10 @@ from pydantic import BaseModel
 import json
 
 from core.logging import get_logger
-from di.services import get_student_service, get_calculation_service
+from di.services import get_student_service, get_calculation_service, get_form_submission_service
 from services.student import StudentService
 from services.calculation import CalculationService
-from domain.form import FormSubmission
+from services.form_submission import FormSubmissionService
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -43,41 +43,38 @@ async def calculate_distribution(service: CalculationService = Depends(get_calcu
 
 
 @router.post("/api/v1/form/submit")
-async def receive_form_submission(request: Request):
-    """
-    Тестовый эндпоинт для приема данных от Яндекс Формы.
-    Принимает данные и выводит их в консоль.
-    """
+async def receive_form_submission(
+    request: Request,
+    service: FormSubmissionService = Depends(get_form_submission_service)
+):
+    """Endpoint for receiving Yandex Form submissions."""
     try:
-        # Получаем тело запроса
         body = await request.json()
-        
-        # Получаем заголовки
         headers = dict(request.headers)
         
-        # Создаем доменную модель
-        form_data = FormSubmission(
-            data=body,
-            headers=headers,
-            method=request.method
-        )
-        
-        # Логируем в консоль
         logger.info("=" * 80)
         logger.info("📝 ПОЛУЧЕНЫ ДАННЫЕ ОТ ЯНДЕКС ФОРМЫ")
         logger.info("=" * 80)
-        logger.info(f"Метод запроса: {form_data.method}")
-        logger.info(f"Заголовки: {json.dumps(form_data.headers, ensure_ascii=False, indent=2)}")
+        logger.info(f"Метод запроса: {request.method}")
+        logger.info(f"Заголовки: {json.dumps(headers, ensure_ascii=False, indent=2)}")
         logger.info("Данные формы:")
-        logger.info(json.dumps(form_data.data, ensure_ascii=False, indent=2))
+        logger.info(json.dumps(body, ensure_ascii=False, indent=2))
         logger.info("=" * 80)
         
-        # Возвращаем успешный ответ (код 200 для Яндекс Формы)
-        return {
-            "success": True,
-            "message": "Данные успешно получены",
-            "received_data": form_data.data
-        }
+        result = await service.process_yandex_form_submission(body)
+        
+        if result["success"]:
+            logger.info(f"✅ Успешно обработано: {result.get('message', '')}")
+            return JSONResponse(
+                status_code=status.HTTP_200_OK,
+                content=result
+            )
+        else:
+            logger.warning(f"⚠️ Ошибка обработки: {result.get('message', '')}")
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content=result
+            )
         
     except json.JSONDecodeError as e:
         logger.error(f"Ошибка парсинга JSON: {str(e)}")
@@ -85,16 +82,18 @@ async def receive_form_submission(request: Request):
             status_code=status.HTTP_400_BAD_REQUEST,
             content={
                 "success": False,
-                "message": f"Ошибка парсинга JSON: {str(e)}"
+                "message": f"Ошибка парсинга JSON: {str(e)}",
+                "error": "json_decode_error"
             }
         )
         
     except Exception as e:
-        logger.error(f"Ошибка при обработке запроса: {str(e)}")
+        logger.error(f"Ошибка при обработке запроса: {str(e)}", exc_info=True)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "success": False,
-                "message": f"Ошибка обработки: {str(e)}"
+                "message": f"Внутренняя ошибка сервера: {str(e)}",
+                "error": "internal_error"
             }
         )

@@ -81,6 +81,19 @@ class DistributionRepository(IDistributionRepository):
             logger.error(f"Failed to save ranking: {str(e)}")
             raise SheetNotFoundError(f"Unable to save ranking data: {str(e)}")
 
+    async def add_student(self, student_data: Dict[str, Any]) -> None:
+        """Add a new student to the students distribution sheet."""
+        try:
+            logger.info("Adding new student to Google Sheets")
+
+            await self._add_student_data(student_data)
+
+            logger.info("Successfully added student to sheet")
+
+        except Exception as e:
+            logger.error(f"Failed to add student: {str(e)}")
+            raise SheetNotFoundError(f"Unable to add student data: {str(e)}")
+
     async def _fetch_sheet_data(self, sheet_index: int, sheet_type: str) -> List[Dict[str, Any]]:
         """Fetch data from a specific Google Sheet."""
         def fetch_data():
@@ -209,3 +222,39 @@ class DistributionRepository(IDistributionRepository):
                 raise SheetNotFoundError(f"Error saving ranking data: {str(e)}")
 
         await asyncio.to_thread(save_data)
+
+    async def _add_student_data(self, student_data: Dict[str, Any]) -> None:
+        """Add student data to the students distribution sheet."""
+        def add_data():
+            try:
+                worksheets = self.spreadsheet.worksheets()
+
+                if len(worksheets) <= self.students_sheet_index:
+                    raise SheetNotFoundError(
+                        f"Students sheet index {self.students_sheet_index} not found"
+                    )
+
+                sheet = worksheets[self.students_sheet_index]
+                logger.debug(f"Adding student to sheet: '{sheet.title}'")
+
+                row = [
+                    student_data.get("ФИО", ""),
+                    student_data.get("Пол", ""),
+                    student_data.get("Институт", ""),
+                    student_data.get("СВО", 0),
+                    student_data.get("ЧАЭС", 0),
+                    student_data.get("Инвалидность", 0),
+                    student_data.get("Курение", 0),
+                    student_data.get("Расстояние", 0),
+                    student_data.get("Многодетная семья", 0)
+                ]
+
+                sheet.append_row(row)
+                logger.debug(f"Added student row: {row}")
+
+            except gspread.exceptions.GSpreadException as e:
+                raise SheetNotFoundError(f"Google Sheets error: {str(e)}")
+            except Exception as e:
+                raise SheetNotFoundError(f"Error adding student data: {str(e)}")
+
+        await asyncio.to_thread(add_data)
